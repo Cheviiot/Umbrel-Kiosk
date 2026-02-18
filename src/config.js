@@ -10,8 +10,7 @@ const { app } = require('electron');
 // Default configuration
 const DEFAULT_CONFIG = {
   // Appearance
-  cursorTheme: 'dark',      // 'dark' | 'light' | 'system'
-  cursorSize: 'medium',     // 'small' | 'medium' | 'large' | 'xlarge'
+  cursorTheme: 'dark',      // 'dark' | 'light'
   
   // Dock Panel
   dockPosition: 'bottom-right', // 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left' | 'center-right' | 'center-left'

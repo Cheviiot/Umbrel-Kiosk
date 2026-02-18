@@ -1064,26 +1064,13 @@ function showNavPanel() {
 // SOFTWARE CURSOR (Works even when system cursor is hidden)
 // ============================================================================
 
-function injectSoftwareCursor(theme = null, size = null) {
+function injectSoftwareCursor(theme = null) {
   // Real software cursor - a div that follows the mouse
   // Works even when system hides cursor (unclutter, Cage, etc.)
   
   if (!theme) {
     theme = appConfig.get('cursorTheme') || 'dark';
   }
-  
-  if (!size) {
-    size = appConfig.get('cursorSize') || 'medium';
-  }
-  
-  // Size mapping (in pixels)
-  const sizeMap = {
-    small: 24,
-    medium: 32,
-    large: 48,
-    xlarge: 64
-  };
-  const cursorPx = sizeMap[size] || 32;
   
   // If system theme selected, remove software cursor
   if (theme === 'system') {
@@ -1123,7 +1110,7 @@ function injectSoftwareCursor(theme = null, size = null) {
     return;
   }
   
-  logInfo('Injecting software cursor', { theme, size, cursorPx });
+  logInfo('Injecting software cursor', { theme });
   
   // Inject real software cursor - div that follows mouse
   mainWindow.webContents.executeJavaScript(`
@@ -1145,36 +1132,30 @@ function injectSoftwareCursor(theme = null, size = null) {
       const cursor = document.createElement('div');
       cursor.id = 'umbrel-sw-cursor';
       
-      // Cursor size
-      const cursorSize = ${cursorPx};
-      const hotspotDefault = Math.round(cursorSize * 0.125); // ~4px for 32
-      const hotspotPointer = Math.round(cursorSize * 0.3125); // ~10px for 32
-      const hotspotText = Math.round(cursorSize * 0.5); // center
-      
       // Create style
       const style = document.createElement('style');
       style.id = 'umbrel-cursor-style';
       style.textContent = \`
         #umbrel-sw-cursor {
           position: fixed;
-          width: \${cursorSize}px;
-          height: \${cursorSize}px;
+          width: 32px;
+          height: 32px;
           pointer-events: none;
           z-index: 2147483647;
           background-image: url("\${cursors.default}");
           background-size: contain;
           background-repeat: no-repeat;
-          transform: translate(-\${hotspotDefault}px, -\${hotspotDefault}px);
+          transform: translate(-4px, -4px);
           will-change: left, top;
           display: none;
         }
         #umbrel-sw-cursor.pointer {
           background-image: url("\${cursors.pointer}");
-          transform: translate(-\${hotspotPointer}px, -\${hotspotDefault}px);
+          transform: translate(-10px, -4px);
         }
         #umbrel-sw-cursor.text {
           background-image: url("\${cursors.text}");
-          transform: translate(-\${hotspotText}px, -\${hotspotText}px);
+          transform: translate(-16px, -16px);
         }
         /* Hide system cursor everywhere */
         *, *::before, *::after {
@@ -1463,31 +1444,17 @@ function injectSettingsPanel() {
           <h2>⚙️ Настройки</h2>
           
           <div class="setting-group">
-            <div class="setting-label">Курсор</div>
+            <div class="setting-label">Тема курсора</div>
             <div class="setting-row">
-              <div style="width:100%">
-                <div class="setting-name">Тема</div>
-                <div class="cursor-options" style="margin-top:8px">
-                  <button class="cursor-btn \${config.cursorTheme === 'dark' ? 'active' : ''}" data-theme="dark">
-                    <span class="icon"><svg width="24" height="24" viewBox="0 0 257 257" fill="none"><path d="M74.3188 38.6418L74.1536 179.927C74.1519 181.331 75.2644 182.481 76.6672 182.541C84.4433 182.872 108.472 184.577 123.598 193.178C134.387 199.313 135.353 206.18 146.709 201.171C158.065 196.161 153.06 191.076 155.804 178.972C159.647 162.019 174.161 143.323 179.036 137.397C179.923 136.32 179.818 134.736 178.786 133.796L74.3188 38.6418Z" fill="#1a1a1a" stroke="#fff" stroke-width="8"/></svg></span>
-                    <span class="label">Тёмный</span>
-                  </button>
-                  <button class="cursor-btn \${config.cursorTheme === 'light' ? 'active' : ''}" data-theme="light">
-                    <span class="icon"><svg width="24" height="24" viewBox="0 0 257 257" fill="none"><path d="M74.3188 38.6418L74.1536 179.927C74.1519 181.331 75.2644 182.481 76.6672 182.541C84.4433 182.872 108.472 184.577 123.598 193.178C134.387 199.313 135.353 206.18 146.709 201.171C158.065 196.161 153.06 191.076 155.804 178.972C159.647 162.019 174.161 143.323 179.036 137.397C179.923 136.32 179.818 134.736 178.786 133.796L74.3188 38.6418Z" fill="#fff" stroke="#1a1a1a" stroke-width="8"/></svg></span>
-                    <span class="label">Светлый</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div class="setting-row">
-              <div style="width:100%">
-                <div class="setting-name">Размер</div>
-                <div class="select-row" style="margin-top:8px" data-setting="cursorSize">
-                  <button class="select-btn \${config.cursorSize === 'small' ? 'active' : ''}" data-value="small">S</button>
-                  <button class="select-btn \${config.cursorSize === 'medium' ? 'active' : ''}" data-value="medium">M</button>
-                  <button class="select-btn \${config.cursorSize === 'large' ? 'active' : ''}" data-value="large">L</button>
-                  <button class="select-btn \${config.cursorSize === 'xlarge' ? 'active' : ''}" data-value="xlarge">XL</button>
-                </div>
+              <div class="cursor-options">
+                <button class="cursor-btn \${config.cursorTheme === 'dark' ? 'active' : ''}" data-theme="dark">
+                  <span class="icon"><svg width="24" height="24" viewBox="0 0 257 257" fill="none"><path d="M74.3188 38.6418L74.1536 179.927C74.1519 181.331 75.2644 182.481 76.6672 182.541C84.4433 182.872 108.472 184.577 123.598 193.178C134.387 199.313 135.353 206.18 146.709 201.171C158.065 196.161 153.06 191.076 155.804 178.972C159.647 162.019 174.161 143.323 179.036 137.397C179.923 136.32 179.818 134.736 178.786 133.796L74.3188 38.6418Z" fill="#1a1a1a" stroke="#fff" stroke-width="8"/></svg></span>
+                  <span class="label">Тёмный</span>
+                </button>
+                <button class="cursor-btn \${config.cursorTheme === 'light' ? 'active' : ''}" data-theme="light">
+                  <span class="icon"><svg width="24" height="24" viewBox="0 0 257 257" fill="none"><path d="M74.3188 38.6418L74.1536 179.927C74.1519 181.331 75.2644 182.481 76.6672 182.541C84.4433 182.872 108.472 184.577 123.598 193.178C134.387 199.313 135.353 206.18 146.709 201.171C158.065 196.161 153.06 191.076 155.804 178.972C159.647 162.019 174.161 143.323 179.036 137.397C179.923 136.32 179.818 134.736 178.786 133.796L74.3188 38.6418Z" fill="#fff" stroke="#1a1a1a" stroke-width="8"/></svg></span>
+                  <span class="label">Светлый</span>
+                </button>
               </div>
             </div>
           </div>
@@ -1699,8 +1666,8 @@ ipcMain.on('kiosk:setConfig', (event, key, value) => {
   appConfig.set(key, value);
   
   // Apply changes immediately
-  if (key === 'cursorTheme' || key === 'cursorSize') {
-    injectSoftwareCursor();
+  if (key === 'cursorTheme') {
+    injectSoftwareCursor(value);
   } else if (key === 'dockPosition' || key === 'dockSize') {
     // Re-inject panel with new settings
     injectNavPanel();
@@ -1717,19 +1684,14 @@ ipcMain.on('kiosk:resetConfig', (event) => {
 });
 
 ipcMain.on('kiosk:clearCache', async () => {
-  logInfo('Clearing browser cache (hard reset)...');
+  logInfo('Clearing browser cache...');
   try {
     const ses = session.defaultSession;
     
-    // Clear HTTP cache
+    // Clear HTTP cache only (keeps cookies/login)
     await ses.clearCache();
     
-    // Clear all storage except cookies (preserve login)
-    await ses.clearStorageData({
-      storages: ['appcache', 'filesystem', 'indexdb', 'localstorage', 'shadercache', 'websql', 'serviceworkers', 'cachestorage']
-    });
-    
-    logInfo('Cache cleared successfully (hard reset)');
+    logInfo('Cache cleared successfully');
     
     // Show notification
     if (mainWindow && mainWindow.webContents) {
@@ -1835,24 +1797,7 @@ if (!gotTheLock) {
   });
 }
 
-// Hard cache clear on startup
-async function clearAllCacheOnStartup() {
-  try {
-    const ses = session.defaultSession;
-    
-    // Clear everything except cookies (to preserve login)
-    await ses.clearCache();
-    await ses.clearStorageData({
-      storages: ['appcache', 'filesystem', 'indexdb', 'localstorage', 'shadercache', 'websql', 'serviceworkers', 'cachestorage']
-    });
-    
-    logInfo('Startup cache cleared (hard reset)');
-  } catch (err) {
-    logWarn('Failed to clear startup cache', { error: err.message });
-  }
-}
-
-app.whenReady().then(async () => {
+app.whenReady().then(() => {
   logInfo('Application starting', {
     url: cliConfig.url,
     insecure: cliConfig.insecure,
@@ -1862,9 +1807,6 @@ app.whenReady().then(async () => {
     platform: process.platform,
     arch: process.arch
   });
-
-  // Hard cache reset on every startup
-  await clearAllCacheOnStartup();
 
   createWindow();
   registerShortcuts();

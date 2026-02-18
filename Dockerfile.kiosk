@@ -1,0 +1,42 @@
+# Kiosk контейнер с Xvfb + noVNC для тестирования
+FROM debian:bookworm-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Базовые пакеты + VNC + noVNC
+RUN apt-get update && apt-get install -y \
+    curl wget ca-certificates gnupg \
+    mesa-utils libgl1-mesa-dri libegl1-mesa libgbm1 \
+    libgtk-3-0 libnotify4 libnss3 libxss1 libxtst6 \
+    libatspi2.0-0 libsecret-1-0 libasound2 libdrm2 \
+    x11vnc xvfb fluxbox \
+    novnc websockify python3 python3-numpy \
+    procps dbus-x11 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Node.js 20
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
+
+# Создаём пользователя kiosk
+RUN useradd -m -s /bin/bash kiosk && \
+    usermod -aG video,audio kiosk
+
+# Копируем приложение
+WORKDIR /app
+COPY package*.json ./
+# Устанавливаем electron (dev зависимость), игнорируем postinstall
+RUN npm install --ignore-scripts
+COPY . .
+
+# Права
+RUN chown -R kiosk:kiosk /app
+
+# Стартовый скрипт (без heredoc)
+COPY scripts/docker-start.sh /start.sh
+RUN chmod +x /start.sh
+
+EXPOSE 5900 6080
+
+CMD ["/start.sh"]

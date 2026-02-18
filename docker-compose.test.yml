@@ -1,0 +1,54 @@
+# Тестовое окружение для Umbrel Kiosk
+# Эмулирует реальное железо с Umbrel + noVNC
+
+services:
+  # Umbrel Backend
+  umbrel:
+    image: dockurr/umbrel:latest
+    container_name: umbrel-test
+    privileged: true
+    ports:
+      - "8080:80"
+    environment:
+      - TZ=Europe/Moscow
+    volumes:
+      - umbrel_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 120s
+    networks:
+      kiosk_net:
+        aliases:
+          - umbrel.local
+          - umbrel
+
+  # Kiosk с noVNC (симуляция реального железа)
+  kiosk:
+    build:
+      context: .
+      dockerfile: Dockerfile.kiosk
+    container_name: kiosk-novnc
+    depends_on:
+      umbrel:
+        condition: service_healthy
+    environment:
+      - UMBREL_URL=http://umbrel.local
+      - WLR_NO_HARDWARE_CURSORS=1
+      - XCURSOR_SIZE=1
+    ports:
+      - "5900:5900"
+      - "6080:6080"
+    networks:
+      - kiosk_net
+    shm_size: '2gb'
+
+networks:
+  kiosk_net:
+    driver: bridge
+
+volumes:
+  umbrel_data:
