@@ -1717,14 +1717,19 @@ ipcMain.on('kiosk:resetConfig', (event) => {
 });
 
 ipcMain.on('kiosk:clearCache', async () => {
-  logInfo('Clearing browser cache...');
+  logInfo('Clearing browser cache (hard reset)...');
   try {
     const ses = session.defaultSession;
     
-    // Clear HTTP cache only (keeps cookies/login)
+    // Clear HTTP cache
     await ses.clearCache();
     
-    logInfo('Cache cleared successfully');
+    // Clear all storage except cookies (preserve login)
+    await ses.clearStorageData({
+      storages: ['appcache', 'filesystem', 'indexdb', 'localstorage', 'shadercache', 'websql', 'serviceworkers', 'cachestorage']
+    });
+    
+    logInfo('Cache cleared successfully (hard reset)');
     
     // Show notification
     if (mainWindow && mainWindow.webContents) {
@@ -1830,7 +1835,24 @@ if (!gotTheLock) {
   });
 }
 
-app.whenReady().then(() => {
+// Hard cache clear on startup
+async function clearAllCacheOnStartup() {
+  try {
+    const ses = session.defaultSession;
+    
+    // Clear everything except cookies (to preserve login)
+    await ses.clearCache();
+    await ses.clearStorageData({
+      storages: ['appcache', 'filesystem', 'indexdb', 'localstorage', 'shadercache', 'websql', 'serviceworkers', 'cachestorage']
+    });
+    
+    logInfo('Startup cache cleared (hard reset)');
+  } catch (err) {
+    logWarn('Failed to clear startup cache', { error: err.message });
+  }
+}
+
+app.whenReady().then(async () => {
   logInfo('Application starting', {
     url: cliConfig.url,
     insecure: cliConfig.insecure,
@@ -1840,6 +1862,9 @@ app.whenReady().then(() => {
     platform: process.platform,
     arch: process.arch
   });
+
+  // Hard cache reset on every startup
+  await clearAllCacheOnStartup();
 
   createWindow();
   registerShortcuts();
