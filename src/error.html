@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Umbrel Kiosk - Нет соединения</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    body {
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      color: #fff;
+    }
+    
+    .icon {
+      font-size: 80px;
+      margin-bottom: 32px;
+      opacity: 0.9;
+    }
+    
+    h1 {
+      font-size: 36px;
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+    
+    p {
+      font-size: 18px;
+      color: #888;
+      margin-bottom: 40px;
+    }
+    
+    button {
+      background: #5352ed;
+      color: #fff;
+      border: none;
+      padding: 18px 56px;
+      font-size: 18px;
+      font-weight: 500;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+    
+    button:hover {
+      background: #4241c4;
+      transform: scale(1.02);
+    }
+    
+    button:active {
+      transform: scale(0.98);
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.2);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-top: 32px;
+      display: none;
+    }
+    
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    
+    .loading .spinner {
+      display: block;
+    }
+    
+    .loading button {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="icon">📡</div>
+  <h1>Нет соединения</h1>
+  <p>Проверьте подключение к сети и попробуйте снова</p>
+  <button onclick="retry()">Повторить</button>
+  <div class="spinner"></div>
+  
+  <script>
+    function retry() {
+      document.body.classList.add('loading');
+      if (window.umbrelKiosk && window.umbrelKiosk.retry) {
+        window.umbrelKiosk.retry();
+      } else {
+        // Fallback if preload didn't load
+        setTimeout(() => {
+          location.reload();
+        }, 1000);
+      }
+    }
+  </script>
+</body>
+</html>

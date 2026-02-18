@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" rx="80" fill="#1a1a2e"/>
+  
+  <!-- Outer ring -->
+  <circle cx="256" cy="256" r="180" stroke="#5352ed" stroke-width="12" fill="none"/>
+  
+  <!-- Middle ring -->
+  <circle cx="256" cy="256" r="130" stroke="#5352ed" stroke-width="8" fill="none" opacity="0.7"/>
+  
+  <!-- Inner ring -->
+  <circle cx="256" cy="256" r="80" stroke="#5352ed" stroke-width="6" fill="none" opacity="0.5"/>
+  
+  <!-- Center dot -->
+  <circle cx="256" cy="256" r="30" fill="#5352ed"/>
+  
+  <!-- Accent lines -->
+  <line x1="256" y1="76" x2="256" y2="126" stroke="#5352ed" stroke-width="4" stroke-linecap="round"/>
+  <line x1="256" y1="386" x2="256" y2="436" stroke="#5352ed" stroke-width="4" stroke-linecap="round"/>
+  <line x1="76" y1="256" x2="126" y2="256" stroke="#5352ed" stroke-width="4" stroke-linecap="round"/>
+  <line x1="386" y1="256" x2="436" y2="256" stroke="#5352ed" stroke-width="4" stroke-linecap="round"/>
+</svg>

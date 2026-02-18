@@ -1,0 +1,132 @@
+[Unit]
+Description=Umbrel Kiosk Browser
+Documentation=https://github.com/Cheviiot/Umbrel-Kiosk
+After=network-online.target multi-user.target
+Wants=network-online.target
+# Don't require graphical - we create our own with Cage
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=kiosk
+Group=kiosk
+
+# =============================================================================
+# WAYLAND/CAGE ENVIRONMENT
+# =============================================================================
+# XDG Runtime directory (required for Wayland)
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+Environment=XDG_SESSION_TYPE=wayland
+Environment=XDG_CURRENT_DESKTOP=wlroots
+
+# Wayland settings
+Environment=WAYLAND_DISPLAY=wayland-0
+Environment=QT_QPA_PLATFORM=wayland
+Environment=GDK_BACKEND=wayland,x11
+Environment=SDL_VIDEODRIVER=wayland
+
+# =============================================================================
+# ELECTRON/CHROMIUM SETTINGS
+# =============================================================================
+# Enable GPU acceleration
+Environment=ELECTRON_DISABLE_GPU=0
+Environment=ELECTRON_ENABLE_LOGGING=1
+
+# Chromium flags for better performance
+Environment=ELECTRON_OZONE_PLATFORM_HINT=auto
+
+# Disable sandbox issues
+Environment=ELECTRON_DISABLE_SANDBOX=1
+
+# Memory optimization
+Environment=NODE_OPTIONS=--max-old-space-size=512
+
+# =============================================================================
+# GPU DRIVER SETTINGS
+# =============================================================================
+# Intel GPU
+Environment=LIBVA_DRIVER_NAME=iHD
+Environment=MESA_LOADER_DRIVER_OVERRIDE=iris
+
+# Disable GPU compositing issues
+Environment=LIBGL_DRI3_DISABLE=0
+Environment=MESA_GL_VERSION_OVERRIDE=4.5
+
+# DRM/KMS access
+SupplementaryGroups=video render input
+
+# =============================================================================
+# PATHS AND EXECUTION
+# =============================================================================
+WorkingDirectory=/opt/umbrel-kiosk
+
+# Read URL from config file if exists
+ExecStartPre=/bin/sh -c 'test -f /etc/umbrel-kiosk/url.conf && . /etc/umbrel-kiosk/url.conf || true'
+
+# Main execution with Cage compositor
+# Cage handles: fullscreen, input grab, Wayland compositor
+ExecStart=/usr/bin/cage -s -d -- /opt/umbrel-kiosk/umbrel-kiosk.AppImage --url=http://umbrel.local
+
+# Graceful stop
+ExecStop=/bin/kill -TERM $MAINPID
+TimeoutStopSec=10
+
+# =============================================================================
+# RESTART POLICY
+# =============================================================================
+Restart=always
+RestartSec=3
+# Wait for display to be ready
+ExecStartPre=/bin/sleep 2
+
+# =============================================================================
+# RESOURCE LIMITS (optimized for kiosk)
+# =============================================================================
+# Allow more memory for Electron + web content
+MemoryMax=2G
+MemoryHigh=1536M
+
+# Don't limit CPU - causes stuttering
+# CPUQuota=80%
+
+# File descriptor limits
+LimitNOFILE=65536
+
+# Core dumps for debugging
+LimitCORE=infinity
+
+# =============================================================================
+# SECURITY (relaxed for kiosk functionality)
+# =============================================================================
+# Electron needs these permissions
+NoNewPrivileges=false
+ProtectSystem=false
+ProtectHome=false
+PrivateTmp=false
+
+# Allow /dev access for GPU
+PrivateDevices=false
+DeviceAllow=/dev/dri rw
+DeviceAllow=/dev/input rw
+DeviceAllow=/dev/tty* rw
+
+# =============================================================================
+# WATCHDOG (detect hangs)
+# =============================================================================
+WatchdogSec=60
+NotifyAccess=main
+
+# =============================================================================
+# LOGGING
+# =============================================================================
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=umbrel-kiosk
+
+# Limit log size
+LogRateLimitIntervalSec=30
+LogRateLimitBurst=1000
+
+[Install]
+WantedBy=multi-user.target

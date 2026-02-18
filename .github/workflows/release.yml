@@ -1,0 +1,77 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build DEB package
+        run: npx electron-builder --linux deb --publish never
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Rename DEB
+        run: |
+          cd dist
+          mv umbrel-kiosk_*.deb "umbrel-kiosk_${{ github.ref_name }}_amd64.deb"
+          ls -la
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ github.ref_name }} - Umbrel Kiosk
+          body: |
+            ## Umbrel Kiosk ${{ github.ref_name }}
+
+            Fullscreen kiosk browser for UmbrelOS dashboard.
+
+            ### Features
+            - 🎯 Fullscreen kiosk mode (locked Alt+Tab, F11, etc.)
+            - 🔄 Auto-recovery on network failure
+            - 🎛️ Navigation panel (Ctrl+Alt+N)
+            - ⚙️ Service menu (Ctrl+Alt+U)
+            - 🖱️ Custom BreezeX cursors
+            - 📦 Native DEB package for UmbrelOS
+
+            ### Installation (UmbrelOS)
+            ```bash
+            curl -fsSL https://raw.githubusercontent.com/Cheviiot/Umbrel-Kiosk/main/scripts/umbrel-kiosk.sh | sudo bash
+            ```
+
+            ### Manual Installation
+            ```bash
+            wget https://github.com/Cheviiot/Umbrel-Kiosk/releases/download/${{ github.ref_name }}/umbrel-kiosk_${{ github.ref_name }}_amd64.deb
+            sudo dpkg -i umbrel-kiosk_${{ github.ref_name }}_amd64.deb
+            sudo apt-get install -f
+            ```
+
+            ### Options
+            - `--url=URL` - Target URL (default: http://umbrel.local)
+            - `--dev` - Development mode with DevTools
+            - `--insecure` - Accept self-signed certificates
+          files: |
+            dist/umbrel-kiosk_${{ github.ref_name }}_amd64.deb
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

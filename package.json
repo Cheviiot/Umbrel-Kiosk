@@ -1,0 +1,71 @@
+{
+  "name": "umbrel-kiosk",
+  "version": "1.0.0",
+  "description": "Umbrel Kiosk MiniBrowser - fullscreen kiosk mode browser for UmbrelOS",
+  "main": "src/main.js",
+  "author": "Umbrel Kiosk",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder --linux deb",
+    "build:deb": "electron-builder --linux deb",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "local.umbrel.kiosk",
+    "productName": "Umbrel Kiosk",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*"
+    ],
+    "linux": {
+      "target": [
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        }
+      ],
+      "category": "Network",
+      "icon": "build/icon.png",
+      "maintainer": "Cheviiot",
+      "desktop": {
+        "Name": "Umbrel Kiosk",
+        "Comment": "Kiosk browser for UmbrelOS Dashboard",
+        "Terminal": "false",
+        "Type": "Application",
+        "Categories": "Network;WebBrowser;"
+      }
+    },
+    "deb": {
+      "depends": [
+        "libgtk-3-0",
+        "libnotify4",
+        "libnss3",
+        "libxss1",
+        "libxtst6",
+        "libatspi2.0-0",
+        "libsecret-1-0",
+        "libgbm1",
+        "libasound2"
+      ],
+      "packageCategory": "web"
+    },
+    "extraResources": [
+      {
+        "from": "assets/",
+        "to": "assets/",
+        "filter": ["**/*"]
+      }
+    ]
+  }
+}
