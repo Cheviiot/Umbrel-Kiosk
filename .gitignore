@@ -1,0 +1,18 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.idea/
+.vscode/
+*.sw?
+*~
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.log
+
+# Electron specific
+release-builds/
